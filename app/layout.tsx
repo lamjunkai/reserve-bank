@@ -18,7 +18,14 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
       </head>
-      <body>{children}</body>
+      <body>
+        <div className="app-wrap">
+          {children}
+          <footer className="app-footer">
+            MICROSOFT CORPORATION ALL RIGHTS RESERVED ©1995-2025
+          </footer>
+        </div>
+      </body>
     </html>
   )
 }

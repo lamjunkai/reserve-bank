@@ -36,6 +36,22 @@ body {
   line-height: 1.6;
 }
 
+.app-wrap {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-footer {
+  margin-top: auto;
+  padding: 1rem 24px;
+  text-align: center;
+  font-size: 0.75rem;
+  color: var(--ai-text-muted);
+  border-top: 1px solid var(--border-color);
+  background: var(--bg-secondary);
+}
+
 p {
   color: var(--ai-text-muted);
   font-size: 0.9rem;
@@ -63,9 +79,10 @@ p {
 }
 
 .header-logo {
-  height: 26px;
-  width: auto;
+  width: 48px;
+  height: 48px;
   object-fit: contain;
+  flex-shrink: 0;
 }
 
 .header-link {

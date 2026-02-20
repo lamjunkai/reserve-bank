@@ -1,8 +1,9 @@
 'use client'
 
 import { useState } from 'react'
+import Image from 'next/image'
 
-const PROCESSING_SECONDS = 30
+const PROCESSING_SECONDS = 8
 
 function formatReceiptAmount(amount: string, currency: string): string {
   const symbol = currency === 'USD' ? '$' : currency === 'EUR' ? '€' : '£'
@@ -27,11 +28,11 @@ export default function DepositPortal() {
     depositMethod: '' as '' | 'bank_transfer' | 'ach',
     amount: '',
     currency: 'USD',
-    identityVerified: false,
-    accountValidated: false,
-    fraudCheckPassed: false,
-    transactionAuthorized: false,
-    termsAgreed: false,
+    identityVerified: true,
+    accountValidated: true,
+    fraudCheckPassed: true,
+    transactionAuthorized: true,
+    termsAgreed: true,
   })
 
   const handleInputChange = (
@@ -96,11 +97,11 @@ export default function DepositPortal() {
       depositMethod: '',
       amount: '',
       currency: 'USD',
-      identityVerified: false,
-      accountValidated: false,
-      fraudCheckPassed: false,
-      transactionAuthorized: false,
-      termsAgreed: false,
+      identityVerified: true,
+      accountValidated: true,
+      fraudCheckPassed: true,
+      transactionAuthorized: true,
+      termsAgreed: true,
     })
   }
 
@@ -123,6 +124,13 @@ export default function DepositPortal() {
       <>
         <header className="header">
           <div className="header-brand">
+            <Image
+              src="/federal-reserve-logo.jpg"
+              alt="Federal Reserve System"
+              width={48}
+              height={48}
+              className="header-logo"
+            />
             <span className="header-title">Federal Reserve Bank</span>
           </div>
         </header>
@@ -195,6 +203,13 @@ export default function DepositPortal() {
       <>
         <header className="header">
           <div className="header-brand">
+            <Image
+              src="/federal-reserve-logo.jpg"
+              alt="Federal Reserve System"
+              width={48}
+              height={48}
+              className="header-logo"
+            />
             <span className="header-title">Federal Reserve Bank</span>
           </div>
         </header>
@@ -226,6 +241,13 @@ export default function DepositPortal() {
     <>
       <header className="header">
         <div className="header-brand">
+          <Image
+            src="/federal-reserve-logo.jpg"
+            alt="Federal Reserve System"
+            width={48}
+            height={48}
+            className="header-logo"
+          />
           <span className="header-title">Federal Reserve Bank</span>
         </div>
       </header>

